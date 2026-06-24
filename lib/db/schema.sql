@@ -1,8 +1,11 @@
+DROP TABLE IF EXISTS posts;
+DROP TABLE IF EXISTS products;
+
 CREATE TABLE IF NOT EXISTS products (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
   details TEXT,
-  photo_urls TEXT[],
+  photo_urls TEXT,
   created_at TIMESTAMP DEFAULT NOW()
 );
 

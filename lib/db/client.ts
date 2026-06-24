@@ -16,7 +16,7 @@ const database = process.env.AURORA_DATABASE_NAME!
  * Runs a SQL statement against Aurora via the RDS Data API.
  * Pass named parameters as { name: "foo", value: "bar" } objects.
  */
-export async function query(sql: string, parameters: SqlParameter[] = []) {
+export async function query(sql: string, parameters: SqlParameter[] = [], retries = 2) {
   const command = new ExecuteStatementCommand({
     resourceArn,
     secretArn,
@@ -26,8 +26,19 @@ export async function query(sql: string, parameters: SqlParameter[] = []) {
     includeResultMetadata: true,
   })
 
-  const response = await client.send(command)
-  return response
+  try {
+    const response = await client.send(command)
+    return response
+  } catch (error) {
+    const isResuming =
+      error instanceof Error && error.name === "DatabaseResumingException"
+
+    if (isResuming && retries > 0) {
+      await new Promise((resolve) => setTimeout(resolve, 3000))
+      return query(sql, parameters, retries - 1)
+    }
+    throw error
+  }
 }
 
 /**

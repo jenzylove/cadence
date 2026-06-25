@@ -4,8 +4,14 @@ import { NextResponse } from "next/server"
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { name, details, photoUrls } = body
+    const { businessId, name, details, photoUrls } = body
 
+    if (!businessId) {
+      return NextResponse.json(
+        { success: false, error: "businessId is required" },
+        { status: 400 }
+      )
+    }
     if (!name || typeof name !== "string") {
       return NextResponse.json(
         { success: false, error: "Product name is required" },
@@ -14,15 +20,16 @@ export async function POST(request: Request) {
     }
 
     const result = await query(
-  `INSERT INTO products (name, details, photo_urls)
-   VALUES (:name, :details, :photoUrls)
-   RETURNING id, name, details, photo_urls, created_at`,
-  [
-    { name: "name", value: { stringValue: name } },
-    { name: "details", value: details ? { stringValue: details } : { isNull: true } },
-    { name: "photoUrls", value: { stringValue: JSON.stringify(photoUrls ?? []) } },
-  ]
-)
+      `INSERT INTO products (business_id, name, details, photo_urls)
+       VALUES (:businessId, :name, :details, :photoUrls)
+       RETURNING id, business_id, name, details, photo_urls, created_at`,
+      [
+        { name: "businessId", value: { longValue: businessId } },
+        { name: "name", value: { stringValue: name } },
+        { name: "details", value: details ? { stringValue: details } : { isNull: true } },
+        { name: "photoUrls", value: { stringValue: JSON.stringify(photoUrls ?? []) } },
+      ]
+    )
 
     const rows = rowsToObjects(result)
     return NextResponse.json({ success: true, data: rows[0] })
@@ -34,11 +41,20 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const result = await query(
-      "SELECT id, name, details, photo_urls, created_at FROM products ORDER BY created_at DESC"
-    )
+    const { searchParams } = new URL(request.url)
+    const businessId = searchParams.get("businessId")
+
+    const sql = businessId
+      ? "SELECT id, business_id, name, details, photo_urls, created_at FROM products WHERE business_id = :businessId ORDER BY created_at DESC"
+      : "SELECT id, business_id, name, details, photo_urls, created_at FROM products ORDER BY created_at DESC"
+
+    const params = businessId
+      ? [{ name: "businessId", value: { longValue: parseInt(businessId, 10) } }]
+      : []
+
+    const result = await query(sql, params)
     const rows = rowsToObjects(result)
     return NextResponse.json({ success: true, data: rows })
   } catch (error) {

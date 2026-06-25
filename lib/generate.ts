@@ -7,10 +7,10 @@ const anthropic = new Anthropic({
 const ANGLE_NAMES = ["benefit", "proof", "howto", "bts", "question", "offer", "story"]
 
 const ANGLE_MEANINGS: Record<string, string> = {
-  benefit: "highlight what the customer gains",
+  benefit: "highlight what the customer gains, specific to what this exact product does",
   proof: "social proof, customer reaction, or results",
   howto: "a quick tip or use-case for the product",
-  bts: "behind-the-scenes, how it's made or the story of making it",
+  bts: "behind-the-scenes — but only if there's a real making/sourcing/curating story. If the business resells or distributes an existing product rather than making it, use this slot instead for a tip about how to use the product correctly, or why this specific item was chosen to sell",
   question: "an engaging question that invites replies",
   offer: "a promotion, urgency, or call to action",
   story: "the founder's or brand's deeper why",
@@ -26,7 +26,8 @@ type GeneratedPost = {
 export async function generatePostsForProduct(
   productName: string,
   productDetails: string | null,
-  platforms: string[]
+  platforms: string[],
+  category: string = "other"
 ): Promise<GeneratedPost[]> {
   // Cycle through the business's actual platforms across the 7 angles,
   // so every angle still gets covered, but only on platforms the business uses.
@@ -35,7 +36,7 @@ export async function generatePostsForProduct(
     platform: platforms[i % platforms.length],
   }))
 
-  const prompt = `You're writing social media captions for a small business selling "${productName}".
+  const prompt = `You're writing social media captions for a small ${category} business selling "${productName}". Every caption must be directly relevant to what this specific product is and does, not about packaging, shipping, or unrelated business operations unless the angle specifically calls for that.
 ${productDetails ? `Product details: ${productDetails}` : ""}
 
 This business only posts on these platforms: ${platforms.join(", ")}.

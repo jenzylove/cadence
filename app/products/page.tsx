@@ -29,13 +29,14 @@ export default function ProductsPage() {
   }, [])
 
   async function loadProducts() {
-    const res = await fetch('/api/products')
-    const json = await res.json()
-    if (json.success) {
-      setProducts(json.data)
-    }
-    setLoading(false)
+  const businessId = localStorage.getItem('businessId')
+  const res = await fetch(`/api/products?businessId=${businessId}`)
+  const json = await res.json()
+  if (json.success) {
+    setProducts(json.data)
   }
+  setLoading(false)
+}
 
   useEffect(() => {
     loadProducts()

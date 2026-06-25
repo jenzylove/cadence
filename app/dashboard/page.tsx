@@ -32,10 +32,11 @@ export default function DashboardPage() {
   const [activeIndex, setActiveIndex] = useState<Record<number, number>>({})
 
   async function loadAll() {
-    const [productsRes, postsRes] = await Promise.all([
-      fetch('/api/products').then((r) => r.json()),
-      fetch('/api/posts').then((r) => r.json()),
-    ])
+  const businessId = localStorage.getItem('businessId')
+  const [productsRes, postsRes] = await Promise.all([
+    fetch(`/api/products?businessId=${businessId}`).then((r) => r.json()),
+    fetch(`/api/posts?businessId=${businessId}`).then((r) => r.json()),
+  ])
     if (productsRes.success) {
       setProducts(productsRes.data)
       if (expandedId === null && productsRes.data.length > 0) {

@@ -13,13 +13,22 @@ const PLATFORMS = [
   { id: 'whatsapp', label: 'WhatsApp' },
 ]
 
+const CATEGORIES = [
+  { id: 'fashion', label: 'Fashion & accessories' },
+  { id: 'food', label: 'Food & drink' },
+  { id: 'beauty', label: 'Beauty & skincare' },
+  { id: 'home', label: 'Home & crafts' },
+  { id: 'services', label: 'Services' },
+  { id: 'other', label: 'Other' },
+]
+
 export default function OnboardingPage() {
   const router = useRouter()
   const [name, setName] = useState('')
   const [selected, setSelected] = useState<string[]>(['instagram', 'x'])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
-
+  const [category, setCategory] = useState('other')
   function togglePlatform(id: string) {
     setSelected((prev) =>
       prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
@@ -39,7 +48,7 @@ export default function OnboardingPage() {
     const res = await fetch('/api/businesses', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, platforms: selected }),
+      body: JSON.stringify({ name, category, platforms: selected }),
     })
     const json = await res.json()
 
@@ -79,6 +88,31 @@ export default function OnboardingPage() {
                 required
                 className="rounded-[14px] border border-border bg-background px-4 py-3 font-sans text-base focus:outline-none focus:ring-2 focus:ring-primary"
               />
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <label className="text-sm font-medium font-sans text-foreground">
+                What do you sell?
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {CATEGORIES.map((cat) => {
+                  const isSelected = category === cat.id
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => setCategory(cat.id)}
+                      className={`px-4 py-2 rounded-full text-sm font-sans font-medium border transition-all ${
+                        isSelected
+                          ? 'bg-primary border-primary text-foreground'
+                          : 'bg-background border-border text-muted-foreground hover:border-primary'
+                      }`}
+                    >
+                      {cat.label}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
 
             <div className="flex flex-col gap-3">

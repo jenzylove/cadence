@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { ArrowRight, Check, Upload } from 'lucide-react'
+import Link from 'next/link'
 
 type Product = {
   id: number
@@ -21,7 +22,7 @@ export default function ProductsPage() {
   const [submitting, setSubmitting] = useState(false)
   const [justAdded, setJustAdded] = useState(false)
   const [businessId, setBusinessId] = useState<string | null>(null)
-
+  const [showQueueLink, setShowQueueLink] = useState(false)
   useEffect(() => {
     const id = localStorage.getItem('businessId')
     setBusinessId(id)
@@ -82,16 +83,22 @@ export default function ProductsPage() {
     const json = await res.json()
 
     if (json.success) {
-      setName('')
-      setDetails('')
-      setPhotoUrl('')
-      setJustAdded(true)
-      await loadProducts()
-      setTimeout(() => setJustAdded(false), 1800)
-    }
+  setName('')
+  setDetails('')
+  setPhotoUrl('')
+  setJustAdded(true)
+  setShowQueueLink(true)
+  await loadProducts()
+  setTimeout(() => setJustAdded(false), 1800)
+}
     setSubmitting(false)
   }
-
+async function handleDelete(id: number) {
+    if (!confirm('Remove this product? Its queued posts will be removed too.')) return
+    await fetch(`/api/products/${id}`, { method: 'DELETE' })
+    await loadProducts()
+  }
+  
   return (
     <main className="min-h-screen bg-background text-foreground px-4 sm:px-6 md:px-8 py-12 md:py-16">
       <div className="max-w-2xl mx-auto">
@@ -186,6 +193,19 @@ export default function ProductsPage() {
         <div>
           <h2 className="font-display text-xl font-medium mb-4 text-foreground">
             Your products
+            {showQueueLink && (
+  <div className="bg-sage/10 border border-sage rounded-[16px] p-4 mb-8 flex items-center justify-between">
+    <p className="text-sm font-sans text-foreground">
+      Product added. Ready to build its queue?
+    </p>
+    <Link
+      href="/dashboard"
+      className="text-sm font-sans font-medium px-4 py-2 rounded-[12px] bg-sage text-card hover:shadow-md transition-all flex-shrink-0"
+    >
+      View queue →
+    </Link>
+  </div>
+)}
           </h2>
 
           {loading ? (
@@ -216,9 +236,17 @@ export default function ProductsPage() {
                         </p>
                       )}
                     </div>
-                    <span className="text-xs font-sans px-3 py-1 rounded-full bg-secondary/20 text-secondary whitespace-nowrap">
-                      queued
-                    </span>
+                    <div className="flex items-center gap-2">
+  <span className="text-xs font-sans px-3 py-1 rounded-full bg-secondary/20 text-secondary whitespace-nowrap">
+    queued
+  </span>
+  <button
+    onClick={() => handleDelete(product.id)}
+    className="text-xs font-sans text-muted-foreground hover:text-destructive transition-colors px-2 py-1"
+  >
+    Remove
+  </button>
+</div>
                   </div>
                 )
               })}

@@ -18,12 +18,12 @@ export async function POST(
     }
 
     const productResult = await query(
-      `SELECT p.id, p.name, p.details, b.platforms
-       FROM products p
-       JOIN businesses b ON p.business_id = b.id
-       WHERE p.id = :id`,
-      [{ name: "id", value: { longValue: productId } }]
-    )
+  `SELECT p.id, p.name, p.details, b.platforms, b.category
+   FROM products p
+   JOIN businesses b ON p.business_id = b.id
+   WHERE p.id = :id`,
+  [{ name: "id", value: { longValue: productId } }]
+)
     const products = rowsToObjects(productResult)
 
     if (products.length === 0) {
@@ -38,19 +38,21 @@ export async function POST(
       name: string
       details: string | null
       platforms: string
+      category: string
     }
 
     const platformList = product.platforms.split(",").map((p) => p.trim())
-    
-// Clear out any existing posts for this product before generating a fresh batch
-await query("DELETE FROM posts WHERE product_id = :productId", [
-  { name: "productId", value: { longValue: productId } },
-])
+
+    // Clear out any existing posts for this product before generating a fresh batch
+    await query("DELETE FROM posts WHERE product_id = :productId", [
+      { name: "productId", value: { longValue: productId } },
+    ])
 
     const generatedPosts = await generatePostsForProduct(
       product.name,
       product.details,
-      platformList
+      platformList,
+      product.category
     )
 
     const savedPosts = []

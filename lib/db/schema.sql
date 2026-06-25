@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS businesses;
 CREATE TABLE IF NOT EXISTS businesses (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
+  category TEXT NOT NULL DEFAULT 'other',
   platforms TEXT NOT NULL DEFAULT 'instagram,x,linkedin',
   created_at TIMESTAMP DEFAULT NOW()
 );

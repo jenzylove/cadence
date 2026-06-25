@@ -4,7 +4,7 @@ import { NextResponse } from "next/server"
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { name, platforms } = body
+    const { name, category, platforms } = body
 
     if (!name || typeof name !== "string") {
       return NextResponse.json(
@@ -18,11 +18,12 @@ export async function POST(request: Request) {
       : "instagram,x,linkedin"
 
     const result = await query(
-      `INSERT INTO businesses (name, platforms)
-       VALUES (:name, :platforms)
-       RETURNING id, name, platforms, created_at`,
+      `INSERT INTO businesses (name, category, platforms)
+       VALUES (:name, :category, :platforms)
+       RETURNING id, name, category, platforms, created_at`,
       [
         { name: "name", value: { stringValue: name } },
+        { name: "category", value: { stringValue: category || "other" } },
         { name: "platforms", value: { stringValue: platformsStr } },
       ]
     )
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
 export async function GET() {
   try {
     const result = await query(
-      "SELECT id, name, platforms, created_at FROM businesses ORDER BY created_at DESC"
+      "SELECT id, name, category, platforms, created_at FROM businesses ORDER BY created_at DESC"
     )
     const rows = rowsToObjects(result)
     return NextResponse.json({ success: true, data: rows })

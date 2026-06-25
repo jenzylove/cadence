@@ -2,10 +2,37 @@
 
 import { ArrowRight } from 'lucide-react'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
 
 export default function Page() {
   const [isHovered, setIsHovered] = useState(false)
+  const captionSets = [
+  [
+    "New drop just landed — limited run, won't restock",
+    "Three left in this color. After that, we're done.",
+    "This one sold out twice already. Back in stock today.",
+  ],
+  [
+    "Quick tip: here's how customers actually use this",
+    "Most people don't know it does this too.",
+    "Here's the trick our repeat customers all know.",
+  ],
+  [
+    "Why we built this the way we did",
+    "Every batch is small on purpose. Here's why.",
+    "We tried five versions before this one felt right.",
+  ],
+]
+
+const [captionIndex, setCaptionIndex] = useState(0)
+
+useEffect(() => {
+  const interval = setInterval(() => {
+    setCaptionIndex((prev) => (prev + 1) % 3)
+  }, 4000)
+  return () => clearInterval(interval)
+}, [])
 
   return (
     <main className="min-h-screen bg-background text-foreground">
@@ -25,17 +52,18 @@ export default function Page() {
 
             {/* CTA Group */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-4">
-              <button
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
-                className="group relative px-6 sm:px-8 py-3 sm:py-4 rounded-[20px] bg-primary text-foreground font-sans font-semibold text-base sm:text-lg transition-all duration-200 hover:shadow-lg active:scale-95 flex items-center gap-2"
-              >
-                Start free
-                <ArrowRight
-                  className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1"
-                  aria-hidden="true"
-                />
-              </button>
+              <Link
+  href="/onboarding"
+  onMouseEnter={() => setIsHovered(true)}
+  onMouseLeave={() => setIsHovered(false)}
+  className="group relative px-6 sm:px-8 py-3 sm:py-4 rounded-[20px] bg-primary text-foreground font-sans font-semibold text-base sm:text-lg transition-all duration-200 hover:shadow-lg active:scale-95 flex items-center gap-2"
+>
+  Start free
+  <ArrowRight
+    className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1"
+    aria-hidden="true"
+  />
+</Link>
               <span className="text-sm sm:text-base text-muted-foreground font-sans">
                 for small product brands
               </span>
@@ -53,9 +81,9 @@ export default function Page() {
                       instagram
                     </span>
                   </div>
-                  <p className="text-sm font-sans text-foreground">
-                    New drop just landed — limited run, won&apos;t restock
-                  </p>
+                  <p key={captionIndex} className="text-sm font-sans text-foreground transition-opacity duration-500 animate-in fade-in">
+  {captionSets[0][captionIndex]}
+</p>
                 </div>
               </div>
 
@@ -67,9 +95,9 @@ export default function Page() {
                       x
                     </span>
                   </div>
-                  <p className="text-sm font-sans text-foreground">
-                    Quick tip: here&apos;s how customers actually use this
-                  </p>
+                  <p key={captionIndex} className="text-sm font-sans text-foreground transition-opacity duration-500 animate-in fade-in">
+  {captionSets[1][captionIndex]}
+</p>
                 </div>
               </div>
 
@@ -81,9 +109,9 @@ export default function Page() {
                       linkedin
                     </span>
                   </div>
-                  <p className="text-sm font-sans text-foreground">
-                    Why we built this the way we did
-                  </p>
+                  <p key={captionIndex} className="text-sm font-sans text-foreground transition-opacity duration-500 animate-in fade-in">
+  {captionSets[2][captionIndex]}
+</p>
                 </div>
               </div>
 

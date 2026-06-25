@@ -227,9 +227,9 @@ export default function DashboardPage() {
                             <div className="absolute top-1.5 left-1 right-1 bottom-0 bg-muted/30 rounded-[20px] h-[95%]" />
 
                             <div
-                              onClick={() => !isEditing && advanceCard(product.id, productPosts.length)}
-                              className="relative bg-background border border-border rounded-[20px] p-6 shadow-sm cursor-pointer"
-                            >
+  onClick={() => !isEditing && advanceCard(product.id, productPosts.length)}
+  className="relative bg-background border border-border rounded-[20px] p-6 shadow-sm cursor-pointer"
+>
                               <div className="flex items-center justify-between mb-4">
                                 <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-secondary/20 text-secondary">
                                   {currentPost.platform}

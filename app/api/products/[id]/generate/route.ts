@@ -41,6 +41,11 @@ export async function POST(
     }
 
     const platformList = product.platforms.split(",").map((p) => p.trim())
+    
+// Clear out any existing posts for this product before generating a fresh batch
+await query("DELETE FROM posts WHERE product_id = :productId", [
+  { name: "productId", value: { longValue: productId } },
+])
 
     const generatedPosts = await generatePostsForProduct(
       product.name,

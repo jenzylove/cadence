@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { ArrowRight, Check } from 'lucide-react'
+import { ArrowRight, Check, Upload } from 'lucide-react'
 
 type Product = {
   id: number
@@ -16,8 +16,16 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true)
   const [name, setName] = useState('')
   const [details, setDetails] = useState('')
+  const [photoUrl, setPhotoUrl] = useState('')
+  const [uploading, setUploading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [justAdded, setJustAdded] = useState(false)
+  const [businessId, setBusinessId] = useState<string | null>(null)
+
+  useEffect(() => {
+    const id = localStorage.getItem('businessId')
+    setBusinessId(id)
+  }, [])
 
   async function loadProducts() {
     const res = await fetch('/api/products')
@@ -32,21 +40,51 @@ export default function ProductsPage() {
     loadProducts()
   }, [])
 
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    })
+    const json = await res.json()
+
+    if (json.success) {
+      setPhotoUrl(json.url)
+    }
+    setUploading(false)
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!name.trim()) return
+    if (!businessId) {
+      alert('Please complete onboarding first.')
+      return
+    }
 
     setSubmitting(true)
     const res = await fetch('/api/products', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, details, photoUrls: [] }),
+      body: JSON.stringify({
+        businessId: parseInt(businessId, 10),
+        name,
+        details,
+        photoUrls: photoUrl ? [photoUrl] : [],
+      }),
     })
     const json = await res.json()
 
     if (json.success) {
       setName('')
       setDetails('')
+      setPhotoUrl('')
       setJustAdded(true)
       await loadProducts()
       setTimeout(() => setJustAdded(false), 1800)
@@ -97,9 +135,37 @@ export default function ProductsPage() {
               />
             </div>
 
+            <div className="flex flex-col gap-2">
+              <label htmlFor="photo" className="text-sm font-medium font-sans text-foreground">
+                Photo <span className="text-muted-foreground">(optional)</span>
+              </label>
+              <label
+                htmlFor="photo"
+                className="rounded-[14px] border border-dashed border-border bg-background px-4 py-6 font-sans text-sm text-muted-foreground flex flex-col items-center gap-2 cursor-pointer hover:border-primary transition-colors"
+              >
+                {uploading ? (
+                  'Uploading...'
+                ) : photoUrl ? (
+                  <img src={photoUrl} alt="Product preview" className="h-20 rounded-[10px] object-cover" />
+                ) : (
+                  <>
+                    <Upload className="w-5 h-5" />
+                    Click to upload a photo
+                  </>
+                )}
+              </label>
+              <input
+                id="photo"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </div>
+
             <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || uploading}
               className="self-start px-6 py-3 rounded-[16px] bg-primary text-foreground font-sans font-semibold text-base transition-all duration-200 hover:shadow-lg active:scale-95 flex items-center gap-2 disabled:opacity-60"
             >
               {justAdded ? (
@@ -132,24 +198,30 @@ export default function ProductsPage() {
             </div>
           ) : (
             <div className="flex flex-col gap-3">
-              {products.map((product) => (
-                <div
-                  key={product.id}
-                  className="bg-card rounded-[18px] border border-border p-4 flex items-center justify-between gap-4"
-                >
-                  <div>
-                    <p className="font-sans font-medium text-foreground">{product.name}</p>
-                    {product.details && (
-                      <p className="font-sans text-sm text-muted-foreground mt-1">
-                        {product.details}
-                      </p>
+              {products.map((product) => {
+                const photos = JSON.parse(product.photo_urls || '[]')
+                return (
+                  <div
+                    key={product.id}
+                    className="bg-card rounded-[18px] border border-border p-4 flex items-center gap-4"
+                  >
+                    {photos[0] && (
+                      <img src={photos[0]} alt={product.name} className="w-14 h-14 rounded-[12px] object-cover flex-shrink-0" />
                     )}
+                    <div className="flex-1">
+                      <p className="font-sans font-medium text-foreground">{product.name}</p>
+                      {product.details && (
+                        <p className="font-sans text-sm text-muted-foreground mt-1">
+                          {product.details}
+                        </p>
+                      )}
+                    </div>
+                    <span className="text-xs font-sans px-3 py-1 rounded-full bg-secondary/20 text-secondary whitespace-nowrap">
+                      queued
+                    </span>
                   </div>
-                  <span className="text-xs font-sans px-3 py-1 rounded-full bg-secondary/20 text-secondary whitespace-nowrap">
-                    queued
-                  </span>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>

@@ -30,6 +30,7 @@ export default function DashboardPage() {
   const [editText, setEditText] = useState('')
   const [expandedId, setExpandedId] = useState<number | null>(null)
   const [activeIndex, setActiveIndex] = useState<Record<number, number>>({})
+  const [insight, setInsight] = useState<{ type: string; message: string } | null>(null)
 
   async function loadAll() {
   const businessId = localStorage.getItem('businessId')
@@ -48,9 +49,10 @@ export default function DashboardPage() {
   }
 
   useEffect(() => {
-    loadAll()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  loadAll()
+  loadInsight()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [])
 
   async function handleGenerate(productId: number) {
     setGeneratingFor(productId)
@@ -61,13 +63,14 @@ export default function DashboardPage() {
   }
 
   async function handleApprove(postId: number) {
-    await fetch(`/api/posts/${postId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'approved' }),
-    })
-    await loadAll()
-  }
+  await fetch(`/api/posts/${postId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status: 'approved' }),
+  })
+  await loadAll()
+  await loadInsight()
+}
 
   async function handleRedo(postId: number) {
     setRedoingId(postId)
@@ -125,17 +128,48 @@ export default function DashboardPage() {
     })
   }
 
+  async function loadInsight() {
+  const businessId = localStorage.getItem('businessId')
+  if (!businessId) return
+  const res = await fetch(`/api/businesses/${businessId}/insight`)
+  const json = await res.json()
+  if (json.success) {
+    setInsight(json.data)
+  }
+}
+
   return (
     <main className="min-h-screen bg-background text-foreground px-4 sm:px-6 md:px-8 py-12 md:py-16">
       <div className="max-w-2xl mx-auto">
         <div className="mb-10">
-          <h1 className="font-display text-3xl sm:text-4xl font-medium leading-tight">
-            Your queue
-          </h1>
-          <p className="text-muted-foreground font-sans mt-2">
-            One product at a time, one post at a time.
-          </p>
-        </div>
+  <h1 className="font-display text-3xl sm:text-4xl font-medium leading-tight">
+    Your queue
+  </h1>
+  <p className="text-muted-foreground font-sans mt-2">
+    One product at a time, one post at a time.
+  </p>
+</div>
+
+{insight && (
+  <div
+    className={`rounded-[16px] p-4 mb-8 flex items-start gap-3 ${
+      insight.type === 'alert'
+        ? 'bg-primary/20 border border-primary'
+        : insight.type === 'warning'
+        ? 'bg-primary/10 border border-primary/50'
+        : insight.type === 'good'
+        ? 'bg-sage/10 border border-sage/50'
+        : 'bg-card border border-border'
+    }`}
+  >
+    <span className="text-lg flex-shrink-0">
+      {insight.type === 'alert' ? '⚠️' : insight.type === 'good' ? '✓' : '👀'}
+    </span>
+    <p className="text-sm font-sans text-foreground leading-relaxed">
+      {insight.message}
+    </p>
+  </div>
+)}
 
         {loading ? (
           <p className="text-muted-foreground font-sans text-sm">Loading...</p>

@@ -28,5 +28,6 @@ CREATE TABLE IF NOT EXISTS posts (
   hashtags TEXT,
   scheduled_for TEXT,
   status TEXT DEFAULT 'queued',
+ approved_at TEXT,
   created_at TIMESTAMP DEFAULT NOW()
 );

@@ -19,14 +19,15 @@ export async function PATCH(
     }
 
     if (status) {
-      await query(
-        "UPDATE posts SET status = :status WHERE id = :id",
-        [
-          { name: "status", value: { stringValue: status } },
-          { name: "id", value: { longValue: postId } },
-        ]
-      )
-    }
+  await query(
+    "UPDATE posts SET status = :status, approved_at = :approvedAt WHERE id = :id",
+    [
+      { name: "status", value: { stringValue: status } },
+      { name: "approvedAt", value: status === "approved" ? { stringValue: new Date().toISOString() } : { isNull: true } },
+      { name: "id", value: { longValue: postId } },
+    ]
+  )
+}
 
     if (caption) {
       await query(

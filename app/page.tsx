@@ -42,6 +42,9 @@ useEffect(() => {
           {/* Left: Text Content */}
           <div className="flex flex-col gap-5 md:gap-6">
             <div className="space-y-3">
+              <p className="text-sm font-sans font-semibold text-secondary uppercase tracking-wide">
+                 Social content for small businesses
+              </p>
               <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-medium leading-tight text-pretty">
                 Add a product. Get a week of posts.
               </h1>

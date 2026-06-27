@@ -11,7 +11,7 @@ const ANGLE_MEANINGS: Record<string, string> = {
   proof: "social proof, customer reaction, or results",
   howto: "a quick tip or use-case for the product",
   bts: "behind-the-scenes — but only if there's a real making/sourcing/curating story. If the business resells or distributes an existing product rather than making it, use this slot instead for a tip about how to use the product correctly, or why this specific item was chosen to sell",
-  question: "an engaging question that invites replies",
+  question: "an engaging question that invites replies, but the question must be specifically about what THIS product does or solves, not a generic category question. Reference the product's actual function or ingredient, not just 'skin concerns' in general",
   offer: "a promotion, urgency, or call to action",
   story: "the founder's or brand's deeper why",
 }
@@ -36,7 +36,7 @@ export async function generatePostsForProduct(
     platform: platforms[i % platforms.length],
   }))
 
-  const prompt = `You're writing social media captions for a small ${category} business selling "${productName}". Every caption must be directly relevant to what this specific product is and does, not about packaging, shipping, or unrelated business operations unless the angle specifically calls for that.
+  const prompt = `You're writing social media captions for a small ${category} business selling "${productName}". Every caption, regardless of angle, must mention or clearly reference what this specific product does, what it's made of, or the specific problem it solves. Do not write a caption generic enough to apply to a different product in the same category.
 ${productDetails ? `Product details: ${productDetails}` : ""}
 
 This business only posts on these platforms: ${platforms.join(", ")}.

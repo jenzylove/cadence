@@ -75,9 +75,9 @@ useEffect(() => {
 
           {/* Right: Post Queue Mockups */}
           <div className="relative flex items-start justify-start">
-            <div className="relative w-full max-w-xs h-80">
+            <div className="relative w-full sm:max-w-xs h-80">
               {/* Post Card 1 - Instagram */}
-              <div className="absolute bg-card rounded-[18px] shadow-sm p-4 border border-border transform rotate-2 translate-x-0 translate-y-0 z-30 w-56 h-auto" style={{top: 0, left: 0}}>
+              <div className="absolute bg-card rounded-[18px] shadow-sm p-4 border border-border transform rotate-2 translate-x-0 translate-y-0 z-30 w-40 sm:w-56 h-auto" style={{top: 0, left: 0}}>
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold px-2 py-1 rounded-full bg-secondary/20 text-secondary">
@@ -91,7 +91,7 @@ useEffect(() => {
               </div>
 
               {/* Post Card 2 - X */}
-              <div className="absolute bg-card rounded-[18px] shadow-sm p-4 border border-border transform -rotate-1 translate-x-16 translate-y-24 z-20 w-56 h-auto">
+              <div className="absolute bg-card rounded-[18px] shadow-sm p-4 border border-border transform -rotate-1 translate-x-8 sm:translate-x-16 translate-y-24 z-20 w-40 sm:w-56 h-auto">
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold px-2 py-1 rounded-full bg-secondary/20 text-secondary">
@@ -105,7 +105,7 @@ useEffect(() => {
               </div>
 
               {/* Post Card 3 - LinkedIn */}
-              <div className="absolute bg-card rounded-[18px] shadow-sm p-4 border border-border transform rotate-1 translate-x-32 translate-y-48 z-10 w-56 h-auto">
+              <div className="absolute bg-card rounded-[18px] shadow-sm p-4 border border-border transform rotate-1 translate-x-16 sm:translate-x-32 translate-y-48 z-10 w-40 sm:w-56 h-auto">
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-semibold px-2 py-1 rounded-full bg-secondary/20 text-secondary">
@@ -119,7 +119,7 @@ useEffect(() => {
               </div>
 
               {/* Post Card 4 - Queued (Dashed Border) */}
-              <div className="absolute bg-card rounded-[18px] shadow-sm p-4 border-2 border-dashed border-muted translate-x-48 translate-y-64 z-0 w-56 h-auto flex items-center justify-center">
+              <div className="absolute bg-card rounded-[18px] shadow-sm p-4 border-2 border-dashed border-muted translate-x-24 sm:translate-x-48 translate-y-64 z-0 w-40 sm:w-56 h-auto flex items-center justify-center">
                 <div className="text-center space-y-2">
                   <div className="inline-block px-3 py-1 rounded-full bg-muted/30 text-muted-foreground">
                     <span className="text-xs font-semibold">queued</span>
@@ -174,6 +174,9 @@ useEffect(() => {
         <div className="max-w-5xl mx-auto text-center">
           <div className="text-sm text-muted-foreground font-sans">
             © 2026 Cadence. Built for small businesses.
+          </div>
+          <div className="text-xs text-muted-foreground/70 font-sans mt-1">
+            Built for the H0 Hackathon.
           </div>
         </div>
       </footer>

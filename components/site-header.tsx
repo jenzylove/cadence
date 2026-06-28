@@ -20,7 +20,7 @@ export function SiteHeader() {
         </Link>
 
         {!isLanding && (
-          <nav className="flex items-center gap-5">
+          <nav aria-label="Primary" className="flex items-center gap-5">
             {NAV_LINKS.map((link) => {
               const isActive = pathname === link.href
               return (

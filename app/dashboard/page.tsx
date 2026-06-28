@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Check, RotateCw, Pencil, Sparkles, X, Share2, ChevronDown } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 
 type Post = {
   id: number
@@ -172,7 +173,17 @@ export default function DashboardPage() {
 )}
 
         {loading ? (
-          <p className="text-muted-foreground font-sans text-sm">Loading...</p>
+          <div className="flex flex-col gap-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="bg-card rounded-[18px] border border-border px-5 py-4 flex items-center gap-3">
+                <Skeleton className="w-9 h-9 rounded-[10px] flex-shrink-0" />
+                <div className="flex flex-col gap-2 flex-1">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-20" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : products.length === 0 ? (
           <div className="border border-dashed border-muted rounded-[18px] p-8 text-center">
             <p className="text-muted-foreground font-sans text-sm">

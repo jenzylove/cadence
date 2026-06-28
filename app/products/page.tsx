@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { ArrowRight, Check, Upload } from 'lucide-react'
 import Link from 'next/link'
+import { Skeleton } from '@/components/ui/skeleton'
 
 type Product = {
   id: number
@@ -22,6 +23,8 @@ export default function ProductsPage() {
   const [submitting, setSubmitting] = useState(false)
   const [justAdded, setJustAdded] = useState(false)
   const [showQueueLink, setShowQueueLink] = useState(false)
+  const [formError, setFormError] = useState('')
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
 
   async function loadProducts() {
   const res = await fetch('/api/products')
@@ -60,6 +63,7 @@ export default function ProductsPage() {
     e.preventDefault()
     if (!name.trim()) return
 
+    setFormError('')
     setSubmitting(true)
     const res = await fetch('/api/products', {
       method: 'POST',
@@ -81,16 +85,16 @@ export default function ProductsPage() {
   await loadProducts()
   setTimeout(() => setJustAdded(false), 1800)
 } else if (json.error === 'unauthenticated') {
-  alert('Please complete onboarding first.')
+  setFormError('Please complete onboarding first.')
 }
     setSubmitting(false)
   }
 async function handleDelete(id: number) {
-    if (!confirm('Remove this product? Its queued posts will be removed too.')) return
+    setConfirmDeleteId(null)
     await fetch(`/api/products/${id}`, { method: 'DELETE' })
     await loadProducts()
   }
-  
+
   return (
     <main className="min-h-screen bg-background text-foreground px-4 sm:px-6 md:px-8 py-12 md:py-16">
       <div className="max-w-2xl mx-auto">
@@ -179,29 +183,41 @@ async function handleDelete(id: number) {
                 </>
               )}
             </button>
+            {formError && <p className="text-sm text-destructive font-sans">{formError}</p>}
           </div>
         </form>
 
         <div>
           <h2 className="font-display text-xl font-medium mb-4 text-foreground">
             Your products
-            {showQueueLink && (
-  <div className="bg-sage/10 border border-sage rounded-[16px] p-4 mb-8 flex items-center justify-between">
-    <p className="text-sm font-sans text-foreground">
-      Product added. Ready to build its queue?
-    </p>
-    <Link
-      href="/dashboard"
-      className="text-sm font-sans font-medium px-4 py-2 rounded-[12px] bg-sage text-card hover:shadow-md transition-all flex-shrink-0"
-    >
-      View queue →
-    </Link>
-  </div>
-)}
           </h2>
 
+          {showQueueLink && (
+            <div className="bg-sage/10 border border-sage rounded-[16px] p-4 mb-8 flex items-center justify-between">
+              <p className="text-sm font-sans text-foreground">
+                Product added. Ready to build its queue?
+              </p>
+              <Link
+                href="/dashboard"
+                className="text-sm font-sans font-medium px-4 py-2 rounded-[12px] bg-sage text-card hover:shadow-md transition-all flex-shrink-0"
+              >
+                View queue →
+              </Link>
+            </div>
+          )}
+
           {loading ? (
-            <p className="text-muted-foreground font-sans text-sm">Loading...</p>
+            <div className="flex flex-col gap-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="bg-card rounded-[18px] border border-border p-4 flex items-center gap-4">
+                  <Skeleton className="w-14 h-14 rounded-[12px] flex-shrink-0" />
+                  <div className="flex-1 flex flex-col gap-2">
+                    <Skeleton className="h-4 w-40" />
+                    <Skeleton className="h-3 w-56" />
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : products.length === 0 ? (
             <div className="border border-dashed border-muted rounded-[18px] p-8 text-center">
               <p className="text-muted-foreground font-sans text-sm">
@@ -232,12 +248,29 @@ async function handleDelete(id: number) {
   <span className="text-xs font-sans px-3 py-1 rounded-full bg-secondary/20 text-secondary whitespace-nowrap">
     queued
   </span>
-  <button
-    onClick={() => handleDelete(product.id)}
-    className="text-xs font-sans text-muted-foreground hover:text-destructive transition-colors px-2 py-1"
-  >
-    Remove
-  </button>
+  {confirmDeleteId === product.id ? (
+    <>
+      <button
+        onClick={() => handleDelete(product.id)}
+        className="text-xs font-sans font-medium text-destructive hover:underline px-2 py-1"
+      >
+        Confirm
+      </button>
+      <button
+        onClick={() => setConfirmDeleteId(null)}
+        className="text-xs font-sans text-muted-foreground hover:text-foreground px-2 py-1"
+      >
+        Cancel
+      </button>
+    </>
+  ) : (
+    <button
+      onClick={() => setConfirmDeleteId(product.id)}
+      className="text-xs font-sans text-muted-foreground hover:text-destructive transition-colors px-2 py-1"
+    >
+      Remove
+    </button>
+  )}
 </div>
                   </div>
                 )

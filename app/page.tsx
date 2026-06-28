@@ -159,7 +159,7 @@ useEffect(() => {
             {/* Stat 3 */}
             <div className="flex flex-col items-center sm:items-start gap-3 text-center sm:text-left">
               <div className="font-display text-5xl md:text-6xl font-medium text-muted">
-                always
+                ∞
               </div>
               <p className="text-sm md:text-base text-muted-foreground font-sans leading-relaxed">
                 Lives in your queue, ready when you are
@@ -171,22 +171,9 @@ useEffect(() => {
 
       {/* Footer */}
       <footer className="bg-background border-t border-border px-4 sm:px-6 md:px-8 py-8">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="text-sm text-muted-foreground font-sans">
-              © 2026 Cadence. Built for small businesses.
-            </div>
-            <div className="flex gap-6">
-              <a href="#" className="text-sm text-foreground hover:text-primary transition-colors font-sans">
-                Privacy
-              </a>
-              <a href="#" className="text-sm text-foreground hover:text-primary transition-colors font-sans">
-                Terms
-              </a>
-              <a href="#" className="text-sm text-foreground hover:text-primary transition-colors font-sans">
-                Contact
-              </a>
-            </div>
+        <div className="max-w-5xl mx-auto text-center">
+          <div className="text-sm text-muted-foreground font-sans">
+            © 2026 Cadence. Built for small businesses.
           </div>
         </div>
       </footer>

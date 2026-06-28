@@ -53,7 +53,6 @@ export default function OnboardingPage() {
     const json = await res.json()
 
     if (json.success) {
-      localStorage.setItem('businessId', String(json.data.id))
       router.push('/products')
     } else {
       setError(json.error || 'Something went wrong.')

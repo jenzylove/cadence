@@ -33,10 +33,9 @@ export default function DashboardPage() {
   const [insight, setInsight] = useState<{ type: string; message: string } | null>(null)
 
   async function loadAll() {
-  const businessId = localStorage.getItem('businessId')
   const [productsRes, postsRes] = await Promise.all([
-    fetch(`/api/products?businessId=${businessId}`).then((r) => r.json()),
-    fetch(`/api/posts?businessId=${businessId}`).then((r) => r.json()),
+    fetch('/api/products').then((r) => r.json()),
+    fetch('/api/posts').then((r) => r.json()),
   ])
     if (productsRes.success) {
       setProducts(productsRes.data)
@@ -129,9 +128,10 @@ export default function DashboardPage() {
   }
 
   async function loadInsight() {
-  const businessId = localStorage.getItem('businessId')
-  if (!businessId) return
-  const res = await fetch(`/api/businesses/${businessId}/insight`)
+  const meRes = await fetch('/api/businesses/me')
+  const meJson = await meRes.json()
+  if (!meJson.success) return
+  const res = await fetch(`/api/businesses/${meJson.data.id}/insight`)
   const json = await res.json()
   if (json.success) {
     setInsight(json.data)

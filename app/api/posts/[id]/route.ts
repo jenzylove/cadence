@@ -1,4 +1,5 @@
 import { query, rowsToObjects } from "@/lib/db/client"
+import { requireSessionBusinessId, UnauthenticatedError } from "@/lib/session"
 import { NextResponse } from "next/server"
 
 export async function PATCH(
@@ -6,6 +7,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const businessId = await requireSessionBusinessId()
     const { id } = await params
     const postId = parseInt(id, 10)
     const body = await request.json()
@@ -15,6 +17,21 @@ export async function PATCH(
       return NextResponse.json(
         { success: false, error: "Invalid post id" },
         { status: 400 }
+      )
+    }
+
+    const ownerResult = await query(
+      `SELECT p.business_id FROM posts po
+       JOIN products p ON po.product_id = p.id
+       WHERE po.id = :id`,
+      [{ name: "id", value: { longValue: postId } }]
+    )
+    const owner = rowsToObjects(ownerResult)[0] as { business_id: number } | undefined
+
+    if (!owner || owner.business_id !== businessId) {
+      return NextResponse.json(
+        { success: false, error: "Post not found" },
+        { status: 404 }
       )
     }
 
@@ -47,6 +64,9 @@ export async function PATCH(
 
     return NextResponse.json({ success: true, data: rows[0] })
   } catch (error) {
+    if (error instanceof UnauthenticatedError) {
+      return NextResponse.json({ success: false, error: "unauthenticated" }, { status: 401 })
+    }
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : String(error) },
       { status: 500 }

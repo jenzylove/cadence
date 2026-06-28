@@ -1,4 +1,5 @@
 import { query, rowsToObjects } from "@/lib/db/client"
+import { setSessionCookie } from "@/lib/session"
 import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
@@ -29,6 +30,9 @@ export async function POST(request: Request) {
     )
 
     const rows = rowsToObjects(result)
+    const business = rows[0] as { id: number }
+    await setSessionCookie(business.id)
+
     return NextResponse.json({ success: true, data: rows[0] })
   } catch (error) {
     return NextResponse.json(

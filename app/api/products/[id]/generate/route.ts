@@ -1,5 +1,6 @@
 import { query, rowsToObjects } from "@/lib/db/client"
 import { generatePostsForProduct } from "@/lib/generate"
+import { requireSessionBusinessId, UnauthenticatedError } from "@/lib/session"
 import { NextResponse } from "next/server"
 
 export async function POST(
@@ -7,6 +8,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const businessId = await requireSessionBusinessId()
     const { id } = await params
     const productId = parseInt(id, 10)
 
@@ -18,7 +20,7 @@ export async function POST(
     }
 
     const productResult = await query(
-  `SELECT p.id, p.name, p.details, b.platforms, b.category
+  `SELECT p.id, p.name, p.details, p.business_id, b.platforms, b.category
    FROM products p
    JOIN businesses b ON p.business_id = b.id
    WHERE p.id = :id`,
@@ -37,8 +39,16 @@ export async function POST(
       id: number
       name: string
       details: string | null
+      business_id: number
       platforms: string
       category: string
+    }
+
+    if (product.business_id !== businessId) {
+      return NextResponse.json(
+        { success: false, error: "Product not found" },
+        { status: 404 }
+      )
     }
 
     const platformList = product.platforms.split(",").map((p) => p.trim())
@@ -79,6 +89,9 @@ export async function POST(
 
     return NextResponse.json({ success: true, data: savedPosts })
   } catch (error) {
+    if (error instanceof UnauthenticatedError) {
+      return NextResponse.json({ success: false, error: "unauthenticated" }, { status: 401 })
+    }
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : String(error) },
       { status: 500 }

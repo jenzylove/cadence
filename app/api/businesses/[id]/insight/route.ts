@@ -1,4 +1,5 @@
 import { query, rowsToObjects } from "@/lib/db/client"
+import { requireSessionBusinessId, UnauthenticatedError } from "@/lib/session"
 import { NextResponse } from "next/server"
 
 export async function GET(
@@ -6,6 +7,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const sessionBusinessId = await requireSessionBusinessId()
     const { id } = await params
     const businessId = parseInt(id, 10)
 
@@ -13,6 +15,13 @@ export async function GET(
       return NextResponse.json(
         { success: false, error: "Invalid business id" },
         { status: 400 }
+      )
+    }
+
+    if (businessId !== sessionBusinessId) {
+      return NextResponse.json(
+        { success: false, error: "Forbidden" },
+        { status: 403 }
       )
     }
 
@@ -57,6 +66,9 @@ export async function GET(
 
     return NextResponse.json({ success: true, data: { type, message, daysSince } })
   } catch (error) {
+    if (error instanceof UnauthenticatedError) {
+      return NextResponse.json({ success: false, error: "unauthenticated" }, { status: 401 })
+    }
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : String(error) },
       { status: 500 }

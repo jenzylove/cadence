@@ -21,16 +21,10 @@ export default function ProductsPage() {
   const [uploading, setUploading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [justAdded, setJustAdded] = useState(false)
-  const [businessId, setBusinessId] = useState<string | null>(null)
   const [showQueueLink, setShowQueueLink] = useState(false)
-  useEffect(() => {
-    const id = localStorage.getItem('businessId')
-    setBusinessId(id)
-  }, [])
 
   async function loadProducts() {
-  const businessId = localStorage.getItem('businessId')
-  const res = await fetch(`/api/products?businessId=${businessId}`)
+  const res = await fetch('/api/products')
   const json = await res.json()
   if (json.success) {
     setProducts(json.data)
@@ -65,17 +59,12 @@ export default function ProductsPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!name.trim()) return
-    if (!businessId) {
-      alert('Please complete onboarding first.')
-      return
-    }
 
     setSubmitting(true)
     const res = await fetch('/api/products', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        businessId: parseInt(businessId, 10),
         name,
         details,
         photoUrls: photoUrl ? [photoUrl] : [],
@@ -91,6 +80,8 @@ export default function ProductsPage() {
   setShowQueueLink(true)
   await loadProducts()
   setTimeout(() => setJustAdded(false), 1800)
+} else if (json.error === 'unauthenticated') {
+  alert('Please complete onboarding first.')
 }
     setSubmitting(false)
   }

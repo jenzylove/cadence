@@ -1,5 +1,6 @@
 import { query, rowsToObjects } from "@/lib/db/client"
 import { generatePostsForProduct } from "@/lib/generate"
+import { requireSessionBusinessId, UnauthenticatedError } from "@/lib/session"
 import { NextResponse } from "next/server"
 
 export async function POST(
@@ -7,11 +8,12 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const businessId = await requireSessionBusinessId()
     const { id } = await params
     const postId = parseInt(id, 10)
 
     const postResult = await query(
-      `SELECT po.id, po.platform, po.angle, p.name as product_name, p.details as product_details
+      `SELECT po.id, po.platform, po.angle, p.name as product_name, p.details as product_details, p.business_id
        FROM posts po
        JOIN products p ON po.product_id = p.id
        WHERE po.id = :id`,
@@ -32,6 +34,14 @@ export async function POST(
       angle: string
       product_name: string
       product_details: string | null
+      business_id: number
+    }
+
+    if (post.business_id !== businessId) {
+      return NextResponse.json(
+        { success: false, error: "Post not found" },
+        { status: 404 }
+      )
     }
 
     // Generate a single fresh post for the same platform, asking for just that one angle
@@ -60,6 +70,9 @@ export async function POST(
 
     return NextResponse.json({ success: true, data: rowsToObjects(result)[0] })
   } catch (error) {
+    if (error instanceof UnauthenticatedError) {
+      return NextResponse.json({ success: false, error: "unauthenticated" }, { status: 401 })
+    }
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : String(error) },
       { status: 500 }

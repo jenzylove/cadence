@@ -1,17 +1,13 @@
 import { query, rowsToObjects } from "@/lib/db/client"
+import { requireSessionBusinessId, UnauthenticatedError } from "@/lib/session"
 import { NextResponse } from "next/server"
 
 export async function POST(request: Request) {
   try {
+    const businessId = await requireSessionBusinessId()
     const body = await request.json()
-    const { businessId, name, details, photoUrls } = body
+    const { name, details, photoUrls } = body
 
-    if (!businessId) {
-      return NextResponse.json(
-        { success: false, error: "businessId is required" },
-        { status: 400 }
-      )
-    }
     if (!name || typeof name !== "string") {
       return NextResponse.json(
         { success: false, error: "Product name is required" },
@@ -34,6 +30,9 @@ export async function POST(request: Request) {
     const rows = rowsToObjects(result)
     return NextResponse.json({ success: true, data: rows[0] })
   } catch (error) {
+    if (error instanceof UnauthenticatedError) {
+      return NextResponse.json({ success: false, error: "unauthenticated" }, { status: 401 })
+    }
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : String(error) },
       { status: 500 }
@@ -41,23 +40,20 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url)
-    const businessId = searchParams.get("businessId")
+    const businessId = await requireSessionBusinessId()
 
-    const sql = businessId
-      ? "SELECT id, business_id, name, details, photo_urls, created_at FROM products WHERE business_id = :businessId ORDER BY created_at DESC"
-      : "SELECT id, business_id, name, details, photo_urls, created_at FROM products ORDER BY created_at DESC"
-
-    const params = businessId
-      ? [{ name: "businessId", value: { longValue: parseInt(businessId, 10) } }]
-      : []
-
-    const result = await query(sql, params)
+    const result = await query(
+      "SELECT id, business_id, name, details, photo_urls, created_at FROM products WHERE business_id = :businessId ORDER BY created_at DESC",
+      [{ name: "businessId", value: { longValue: businessId } }]
+    )
     const rows = rowsToObjects(result)
     return NextResponse.json({ success: true, data: rows })
   } catch (error) {
+    if (error instanceof UnauthenticatedError) {
+      return NextResponse.json({ success: false, error: "unauthenticated" }, { status: 401 })
+    }
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : String(error) },
       { status: 500 }

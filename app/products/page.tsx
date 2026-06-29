@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { ArrowRight, Check, Upload } from 'lucide-react'
+import { ArrowRight, Check, Upload, Link2 } from 'lucide-react'
 import Link from 'next/link'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -25,6 +25,9 @@ export default function ProductsPage() {
   const [showQueueLink, setShowQueueLink] = useState(false)
   const [formError, setFormError] = useState('')
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
+  const [importUrl, setImportUrl] = useState('')
+  const [importing, setImporting] = useState(false)
+  const [importError, setImportError] = useState('')
 
   async function loadProducts() {
   const res = await fetch('/api/products')
@@ -57,6 +60,32 @@ export default function ProductsPage() {
       setPhotoUrl(json.url)
     }
     setUploading(false)
+  }
+
+  async function handleImport() {
+    if (!importUrl.trim()) return
+    setImportError('')
+    setImporting(true)
+    const res = await fetch('/api/import', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: importUrl.trim() }),
+    })
+    const json = await res.json()
+
+    if (json.success) {
+      if (json.data.name) setName(json.data.name)
+      if (json.data.details) setDetails(json.data.details)
+      if (json.data.photoUrl) setPhotoUrl(json.data.photoUrl)
+      if (!json.data.name && !json.data.details && !json.data.photoUrl) {
+        setImportError("Couldn't find product info at that link. Fill it in manually below.")
+      }
+    } else if (json.error === 'unauthenticated') {
+      setImportError('Please log in first.')
+    } else {
+      setImportError(json.error || 'Could not import from that link.')
+    }
+    setImporting(false)
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -105,6 +134,35 @@ async function handleDelete(id: number) {
           <p className="text-muted-foreground font-sans mt-2">
             One entry is enough to start the queue.
           </p>
+        </div>
+
+        <div className="bg-card rounded-[20px] border border-border shadow-sm p-6 sm:p-8 mb-6">
+          <label htmlFor="importUrl" className="text-sm font-medium font-sans text-foreground flex items-center gap-2">
+            <Link2 className="w-4 h-4" />
+            Import from a link
+          </label>
+          <p className="text-sm text-muted-foreground font-sans mt-1 mb-3">
+            Paste a product URL and we'll pull in the name, description, and photo for you to review.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              id="importUrl"
+              type="url"
+              value={importUrl}
+              onChange={(e) => setImportUrl(e.target.value)}
+              placeholder="https://yourstore.com/products/candle"
+              className="flex-1 rounded-[14px] border border-border bg-background px-4 py-3 font-sans text-base focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+            <button
+              type="button"
+              onClick={handleImport}
+              disabled={importing || !importUrl.trim()}
+              className="px-5 py-3 rounded-[14px] bg-secondary text-secondary-foreground font-sans font-semibold text-base transition-all duration-200 hover:shadow-md active:scale-95 disabled:opacity-60 whitespace-nowrap"
+            >
+              {importing ? 'Importing...' : 'Import'}
+            </button>
+          </div>
+          {importError && <p className="text-sm text-destructive font-sans mt-3">{importError}</p>}
         </div>
 
         <form onSubmit={handleSubmit} className="bg-card rounded-[20px] border border-border shadow-sm p-6 sm:p-8 mb-12">

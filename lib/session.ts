@@ -29,6 +29,11 @@ export async function setSessionCookie(businessId: number) {
   })
 }
 
+export async function clearSessionCookie() {
+  const cookieStore = await cookies()
+  cookieStore.delete(SESSION_COOKIE)
+}
+
 export async function getSessionBusinessId(): Promise<number | null> {
   const cookieStore = await cookies()
   const token = cookieStore.get(SESSION_COOKIE)?.value

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowRight } from 'lucide-react'
+import Link from 'next/link'
 
 const PLATFORMS = [
   { id: 'instagram', label: 'Instagram' },
@@ -25,6 +26,7 @@ const CATEGORIES = [
 export default function OnboardingPage() {
   const router = useRouter()
   const [name, setName] = useState('')
+  const [password, setPassword] = useState('')
   const [selected, setSelected] = useState<string[]>(['instagram', 'x'])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -38,6 +40,10 @@ export default function OnboardingPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!name.trim()) return
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters.')
+      return
+    }
     if (selected.length === 0) {
       setError('Pick at least one platform.')
       return
@@ -45,10 +51,10 @@ export default function OnboardingPage() {
     setError('')
     setSubmitting(true)
 
-    const res = await fetch('/api/businesses', {
+    const res = await fetch('/api/auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, category, platforms: selected }),
+      body: JSON.stringify({ mode: 'signup', name, password, category, platforms: selected }),
     })
     const json = await res.json()
 
@@ -85,6 +91,23 @@ export default function OnboardingPage() {
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Lantern & Wick Co."
                 required
+                className="rounded-[14px] border border-border bg-background px-4 py-3 font-sans text-base focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label htmlFor="password" className="text-sm font-medium font-sans text-foreground">
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="At least 8 characters"
+                autoComplete="new-password"
+                required
+                minLength={8}
                 className="rounded-[14px] border border-border bg-background px-4 py-3 font-sans text-base focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -150,6 +173,13 @@ export default function OnboardingPage() {
             </button>
           </div>
         </form>
+
+        <p className="text-sm text-muted-foreground font-sans text-center mt-6">
+          Already have an account?{' '}
+          <Link href="/login" className="text-secondary font-medium hover:underline">
+            Log in
+          </Link>
+        </p>
       </div>
     </main>
   )

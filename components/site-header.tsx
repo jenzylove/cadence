@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 
 const NAV_LINKS = [
   { href: '/products', label: 'Products' },
@@ -10,7 +10,14 @@ const NAV_LINKS = [
 
 export function SiteHeader() {
   const pathname = usePathname()
+  const router = useRouter()
   const isLanding = pathname === '/'
+  const showLogout = !isLanding && pathname !== '/login' && pathname !== '/onboarding'
+
+  async function handleLogout() {
+    await fetch('/api/auth/logout', { method: 'POST' })
+    router.push('/login')
+  }
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background">
@@ -19,7 +26,14 @@ export function SiteHeader() {
           Cadence
         </Link>
 
-        {!isLanding && (
+        {isLanding ? (
+          <Link
+            href="/login"
+            className="text-sm font-sans text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Log in
+          </Link>
+        ) : (
           <nav aria-label="Primary" className="flex items-center gap-5">
             {NAV_LINKS.map((link) => {
               const isActive = pathname === link.href
@@ -37,6 +51,14 @@ export function SiteHeader() {
                 </Link>
               )
             })}
+            {showLogout && (
+              <button
+                onClick={handleLogout}
+                className="text-sm font-sans text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Log out
+              </button>
+            )}
           </nav>
         )}
       </div>

@@ -105,7 +105,7 @@ export default function DashboardPage() {
           const blob = await response.blob()
           const file = new File([blob], 'product.jpg', { type: blob.type })
 
-          if (navigator.canShare({ files: [file] })) {
+          if (navigator.canShare({ files: [file], text })) {
             await navigator.share({ text, files: [file] })
             return
           }
